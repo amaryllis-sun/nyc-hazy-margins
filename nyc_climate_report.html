@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hazy Margins — Air Quality &amp; Rising Heat in NYC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root{
+    --ink:#14181D;
+    --ink-2:#1B2129;
+    --paper:#EDEAE2;
+    --fog:#93A0AC;
+    --good:#4C9A8B;
+    --moderate:#D9A441;
+    --unhealthy:#C1573A;
+    --violet:#7A5C8C;
+    --rule: rgba(237,234,226,0.14);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    margin:0 0 0.4em 0;
+    letter-spacing:-0.01em;
+  }
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  a{ color:var(--good); }
+
+  /* ---- AQI ruler, the signature element ---- */
+  .aqi-ruler{
+    display:flex; width:100%; height:10px; border-radius:6px; overflow:hidden;
+    margin: 2.5rem 0;
+  }
+  .aqi-ruler span{ flex:1; }
+  .aqi-ruler .c1{ background:#4C9A8B; }
+  .aqi-ruler .c2{ background:#D9A441; }
+  .aqi-ruler .c3{ background:#C1573A; }
+  .aqi-ruler .c4{ background:#8C3F35; }
+  .aqi-ruler .c5{ background:#7A5C8C; }
+  .aqi-labels{
+    display:flex; justify-content:space-between;
+    font-family:'IBM Plex Mono', monospace; font-size:0.65rem;
+    color:var(--fog); text-transform:uppercase; letter-spacing:0.04em;
+    margin-top:-1.8rem; margin-bottom:2rem;
+  }
+
+  nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(20,24,29,0.88); backdrop-filter: blur(8px);
+    border-bottom:1px solid var(--rule);
+    padding:0.9rem 2rem;
+    display:flex; gap:1.6rem; align-items:center; flex-wrap:wrap;
+    font-size:0.82rem;
+  }
+  nav .brand{ font-family:'Fraunces', serif; font-weight:600; font-size:1rem; margin-right:auto; }
+  nav a{ color:var(--fog); text-decoration:none; }
+  nav a:hover{ color:var(--paper); }
+
+  .wrap{ max-width:920px; margin:0 auto; padding:0 2rem; }
+
+  header.hero{
+    padding: 6.5rem 0 4rem 0;
+    border-bottom:1px solid var(--rule);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-size:0.75rem;
+    color:var(--good); text-transform:uppercase; letter-spacing:0.12em;
+    margin-bottom:1.2rem;
+  }
+  .hero h1{ font-size:clamp(2.2rem, 5vw, 3.4rem); max-width:14ch; }
+  .hero .thesis{
+    font-size:1.15rem; color:var(--fog); max-width:56ch; margin-top:1.4rem;
+  }
+  .hero-stat{
+    display:flex; gap:3rem; margin-top:3rem; flex-wrap:wrap;
+  }
+  .stat-block .num{
+    font-family:'Fraunces', serif; font-weight:600; font-size:2.6rem;
+    color:var(--moderate);
+  }
+  .stat-block .label{
+    font-size:0.78rem; color:var(--fog); max-width:20ch; margin-top:0.3rem;
+  }
+
+  section{ padding:4.5rem 0; border-bottom:1px solid var(--rule); }
+  section:last-of-type{ border-bottom:none; }
+
+  .finding-tag{
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem;
+    color:var(--fog); text-transform:uppercase; letter-spacing:0.1em;
+    margin-bottom:0.6rem;
+  }
+  section h2{ font-size:1.7rem; max-width:26ch; }
+  section p{ color:#D7D3C8; max-width:64ch; }
+  section p.muted{ color:var(--fog); font-size:0.92rem; }
+
+  .chart-card{
+    background:var(--ink-2); border:1px solid var(--rule); border-radius:10px;
+    padding:1.6rem; margin:2rem 0;
+  }
+  .chart-card .caption{
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color:var(--fog);
+    margin-top:0.9rem;
+  }
+  .chart-container{ position:relative; height:280px; }
+
+  table{ width:100%; border-collapse:collapse; margin:1.6rem 0; font-size:0.88rem; }
+  th,td{ text-align:left; padding:0.55rem 0.7rem; border-bottom:1px solid var(--rule); }
+  th{ font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color:var(--fog); text-transform:uppercase; letter-spacing:0.05em; font-weight:500; }
+  td.num{ font-family:'IBM Plex Mono', monospace; }
+
+  .callout{
+    border-left:3px solid var(--unhealthy);
+    background:rgba(193,87,58,0.08);
+    padding:1rem 1.3rem; border-radius:0 8px 8px 0; margin:1.6rem 0;
+    font-size:0.92rem; color:#E9C9BE;
+  }
+  .callout.good{ border-left-color:var(--good); background:rgba(76,154,139,0.08); color:#BFE1D8; }
+
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:1.4rem; }
+  @media (max-width:720px){ .grid-2{ grid-template-columns:1fr; } .hero-stat{ gap:1.8rem; } }
+
+  code.block{
+    display:block; background:#0F1318; border:1px solid var(--rule); border-radius:8px;
+    padding:1rem 1.2rem; font-family:'IBM Plex Mono', monospace; font-size:0.78rem;
+    color:#B9D9CF; overflow-x:auto; white-space:pre; margin:1.2rem 0; line-height:1.55;
+  }
+  .kw{ color:#D9A441; }
+  .fn{ color:#8FB6E8; }
+
+  .tag-row{ display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:1rem; }
+  .tag{
+    font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color:var(--fog);
+    border:1px solid var(--rule); padding:0.25rem 0.6rem; border-radius:20px;
+  }
+
+  footer{ padding:3.5rem 0 5rem 0; }
+  footer p{ color:var(--fog); font-size:0.85rem; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">Hazy Margins</div>
+  <a href="#method">Method</a>
+  <a href="#trend">Air Trend</a>
+  <a href="#heat">Heat</a>
+  <a href="#cities">5 Cities</a>
+  <a href="#boroughs">Boroughs</a>
+  <a href="#limits">Limitations</a>
+</nav>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">A decade of EPA + NOAA data, one city at a time</div>
+    <h1>Is the air actually getting worse, or just the summers?</h1>
+    <p class="thesis">
+      I live in Manhattan, and this past year the sky has felt different — hazier, hotter, longer.
+      So I built a database from eleven years of federal air-quality and weather records to find out
+      whether that feeling holds up, or whether memory is playing tricks. It's a bit of both.
+    </p>
+    <div class="hero-stat">
+      <div class="stat-block">
+        <div class="num">+0.5</div>
+        <div class="label">extra 90°F+ days per year in NYC, 2015&ndash;2025</div>
+      </div>
+      <div class="stat-block">
+        <div class="num">58<span style="font-size:1.2rem;color:var(--fog)"> vs 39</span></div>
+        <div class="label">average AQI on hot days vs. cooler days</div>
+      </div>
+      <div class="stat-block">
+        <div class="num">5</div>
+        <div class="label">cities, 5 boroughs, 1 SQL database</div>
+      </div>
+    </div>
+  </header>
+
+  <section id="method">
+    <div class="finding-tag">Method</div>
+    <h2>What this actually is</h2>
+    <p>
+      A PostgreSQL database built from two federal sources — the EPA's Air Quality System API
+      (daily PM2.5 and AQI, by monitoring station) and NOAA's Climate Data Online API (daily
+      temperature) — spanning 2015 through 2025 across five U.S. cities, plus a full five-borough
+      breakdown for New York City. A third dataset, NYC's Heat Vulnerability Index, adds a
+      socioeconomic layer by ZIP code.
+    </p>
+    <div class="grid-2">
+      <div class="chart-card">
+        <div class="caption">SCHEMA</div>
+        <code class="block"><span class="kw">cities</span> → <span class="kw">stations</span> → <span class="kw">daily_readings</span>
+                     ↳ <span class="kw">weather_readings</span> (by city + date)
+<span class="kw">stations</span> → zip_code → <span class="kw">heat_vulnerability</span></code>
+      </div>
+      <div class="chart-card">
+        <div class="caption">STACK</div>
+        <div class="tag-row">
+          <span class="tag">PostgreSQL</span>
+          <span class="tag">Python / psycopg2</span>
+          <span class="tag">EPA AQS API</span>
+          <span class="tag">NOAA CDO API</span>
+          <span class="tag">Census Geocoder</span>
+          <span class="tag">NYC Open Data</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="trend">
+    <div class="finding-tag">Finding 01</div>
+    <h2>NYC's air quality isn't trending anywhere — until it spikes</h2>
+    <p>
+      Averaged across Manhattan's EPA monitors, yearly AQI bounces between the high 30s and
+      mid 40s with no clean upward or downward line. The one year that stands out, 2023, wasn't
+      part of a trend at all — it was the Canadian wildfire smoke event.
+    </p>
+    <div class="chart-card">
+      <div class="chart-container"><canvas id="yearlyChart"></canvas></div>
+      <div class="caption">Average AQI &amp; PM2.5 by year, Manhattan monitors, 2015&ndash;2025</div>
+    </div>
+    <div class="callout">
+      2023 recorded 3 unhealthy-air days (AQI &gt; 100) — more than any other year in the dataset,
+      and the direct signature of the June 2023 wildfire smoke event. 2024 dropped straight back to zero.
+    </div>
+  </section>
+
+  <section id="heat">
+    <div class="finding-tag">Finding 02</div>
+    <h2>Hot days are creeping up — slowly, and noisily</h2>
+    <p>
+      The number of 90°F+ days each year is trending upward: a linear fit puts it at roughly
+      <strong>+0.5 days per year</strong>. But the fit is loose — <span class="mono">R² = 0.19</span>,
+      meaning most of the year-to-year swing comes from ordinary weather variation, not a steady climb.
+      2020 had just one hot day; 2025 had fourteen.
+    </p>
+    <div class="chart-card">
+      <div class="chart-container"><canvas id="hotDaysChart"></canvas></div>
+      <div class="caption">Days at 90°F+ per year, Central Park station, with linear trend (slope 0.5, R² 0.19)</div>
+    </div>
+    <p>And heat and air quality are, at least in NYC, clearly linked:</p>
+    <div class="chart-card">
+      <div class="chart-container"><canvas id="tempBucketChart"></canvas></div>
+      <div class="caption">Average AQI by daily max temperature, 2015&ndash;2025 (n = 3,397 station-days)</div>
+    </div>
+  </section>
+
+  <section id="cities">
+    <div class="finding-tag">Finding 03</div>
+    <h2>NYC isn't the worst of the five — LA's problem is spikes, not baseline</h2>
+    <p>
+      Houston edges out New York on average AQI, and Los Angeles isn't even the highest average —
+      but LA has more than double the unhealthy-air days of any other city. A moderate average can
+      hide a heavy tail of bad days.
+    </p>
+    <div class="chart-card">
+      <div class="chart-container"><canvas id="cityChart"></canvas></div>
+      <div class="caption">Five-city comparison, 2015&ndash;2025, corrected for monitoring-station density</div>
+    </div>
+    <table>
+      <thead><tr><th>City</th><th>Avg AQI</th><th>Avg PM2.5</th><th>Unhealthy days (11 yrs)</th></tr></thead>
+      <tbody>
+        <tr><td>Los Angeles</td><td class="num">49</td><td class="num">10.9</td><td class="num">37</td></tr>
+        <tr><td>Houston</td><td class="num">48</td><td class="num">10.1</td><td class="num">6</td></tr>
+        <tr><td>Chicago</td><td class="num">44</td><td class="num">9.4</td><td class="num">11</td></tr>
+        <tr><td>New York</td><td class="num">42</td><td class="num">8.6</td><td class="num">2</td></tr>
+        <tr><td>Phoenix</td><td class="num">40</td><td class="num">8.2</td><td class="num">15</td></tr>
+      </tbody>
+    </table>
+    <p class="muted">Corrected after catching a bug: an earlier pass counted a city as having a "bad day" if any single monitor spiked, which inflated heavily-monitored cities like LA and Phoenix. Fixed by averaging to one AQI value per city per day first.</p>
+  </section>
+
+  <section id="boroughs">
+    <div class="finding-tag">Finding 04</div>
+    <h2>Manhattan runs a bit dirtier — heat vulnerability tells a different story</h2>
+    <div class="grid-2">
+      <div class="chart-card">
+        <div class="chart-container"><canvas id="boroughChart"></canvas></div>
+        <div class="caption">Avg AQI by borough (monitor count in parentheses)</div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-container"><canvas id="hviChart"></canvas></div>
+        <div class="caption">Avg AQI by Heat Vulnerability Index (1=lowest risk, 5=highest)</div>
+      </div>
+    </div>
+    <p>
+      Manhattan's monitors average the highest AQI (42) and Staten Island/Queens the lowest (37) —
+      a real but modest gradient. What didn't hold up: a clean relationship between measured air
+      quality and NYC's own Heat Vulnerability Index. The most heat-vulnerable ZIP codes (HVI 5)
+      show average air quality, not the worst.
+    </p>
+    <div class="callout good">
+      That's not a null result — it's a useful one. HVI is built from income, green space, and AC
+      access, not pollution readings. It measures who suffers most when heat arrives, not where the
+      air is dirtiest on paper. Exposure and capacity-to-cope are different axes of climate risk.
+    </div>
+  </section>
+
+  <section id="limits">
+    <div class="finding-tag">Honest limitations</div>
+    <h2>What this data can't tell you</h2>
+    <p>
+      • NYC's borough comparison rests on 14 EPA monitors total — 2 to 4 per borough — not a dense
+      enough grid to call any single ZIP code "worse," only to spot city-scale patterns.<br><br>
+      • Temperature for all five NYC boroughs comes from one station (Central Park). Air quality
+      is borough-specific; heat currently isn't.<br><br>
+      • Correlation between hot days and AQI doesn't separate heat itself from summer generally —
+      ozone chemistry, wind patterns, and wildfire smoke all cluster in the same months.<br><br>
+      • Five cities and eleven years is a real dataset, not a complete one — it supports a pattern,
+      not a national conclusion.
+    </p>
+  </section>
+
+  <section>
+    <div class="finding-tag">The SQL, if you're curious</div>
+    <h2>The query behind the headline number</h2>
+    <p>Postgres's built-in regression functions did the trend-line math directly — no separate stats library needed:</p>
+    <code class="block"><span class="kw">WITH</span> yearly_hot_days <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> <span class="fn">EXTRACT</span>(<span class="kw">YEAR</span> <span class="kw">FROM</span> d.reading_date) <span class="kw">AS</span> year,
+         <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> d.reading_date) <span class="kw">AS</span> hot_days
+  <span class="kw">FROM</span> daily_readings d
+  <span class="kw">JOIN</span> weather_readings w <span class="kw">ON</span> d.reading_date = w.reading_date
+  <span class="kw">WHERE</span> w.max_temp_f &gt;= 90
+  <span class="kw">GROUP BY</span> 1
+)
+<span class="kw">SELECT</span>
+  <span class="fn">REGR_SLOPE</span>(hot_days, year)     <span class="kw">AS</span> days_gained_per_year,
+  <span class="fn">REGR_R2</span>(hot_days, year)        <span class="kw">AS</span> r_squared
+<span class="kw">FROM</span> yearly_hot_days;</code>
+  </section>
+
+  <footer>
+    <div class="aqi-ruler">
+      <span class="c1"></span><span class="c2"></span><span class="c3"></span><span class="c4"></span><span class="c5"></span>
+    </div>
+    <div class="aqi-labels"><span>Good</span><span>Moderate</span><span>USG</span><span>Unhealthy</span><span>Hazardous</span></div>
+    <p>Built with Python, PostgreSQL, the EPA AQS API, NOAA CDO API, and NYC Open Data. A personal project, summer 2026.</p>
+  </footer>
+
+</div>
+
+<script>
+Chart.defaults.color = '#93A0AC';
+Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+Chart.defaults.font.size = 11;
+const gridColor = 'rgba(237,234,226,0.08)';
+
+const years = ['2015','2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'];
+
+new Chart(document.getElementById('yearlyChart'), {
+  type: 'line',
+  data: {
+    labels: years,
+    datasets: [
+      { label:'Avg AQI', data:[47,42,43,45,40,38,38,36,45,37,41], borderColor:'#D9A441', backgroundColor:'rgba(217,164,65,0.12)', tension:0.35, fill:true, pointRadius:3 },
+      { label:'Avg PM2.5', data:[10.2,8.4,8.5,9.3,8.1,7.5,7.5,7.0,9.8,7.2,8.5], borderColor:'#4C9A8B', backgroundColor:'rgba(76,154,139,0.10)', tension:0.35, fill:true, pointRadius:3, yAxisID:'y1' }
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10 } } },
+    scales:{
+      x:{ grid:{ display:false } },
+      y:{ grid:{ color:gridColor }, title:{ display:true, text:'AQI' } },
+      y1:{ position:'right', grid:{ display:false }, title:{ display:true, text:'PM2.5 (µg/m³)' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('hotDaysChart'), {
+  type:'bar',
+  data:{
+    labels:years,
+    datasets:[
+      { label:'Days ≥ 90°F', data:[9,3,3,6,6,1,6,9,3,9,14], backgroundColor:'#C1573A', borderRadius:4 },
+      { label:'Trend', data:[4.3,4.8,5.3,5.8,6.3,6.8,7.3,7.8,8.3,8.8,9.3], type:'line', borderColor:'#EDEAE2', borderDash:[4,3], pointRadius:0, borderWidth:1.5 }
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10 } } },
+    scales:{ x:{ grid:{ display:false } }, y:{ grid:{ color:gridColor }, title:{ display:true, text:'Days at 90°F+' } } }
+  }
+});
+
+new Chart(document.getElementById('tempBucketChart'), {
+  type:'bar',
+  data:{
+    labels:['Cooler (<80°F)','Warm (80–89°F)','Hot (90°F+)'],
+    datasets:[{ label:'Avg AQI', data:[39,50,58], backgroundColor:['#4C9A8B','#D9A441','#C1573A'], borderRadius:6 }]
+  },
+  options:{
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ display:false } },
+    scales:{ x:{ grid:{ color:gridColor } }, y:{ grid:{ display:false } } }
+  }
+});
+
+new Chart(document.getElementById('cityChart'), {
+  type:'bar',
+  data:{
+    labels:['Los Angeles','Houston','Chicago','New York','Phoenix'],
+    datasets:[
+      { label:'Avg AQI', data:[49,48,44,42,40], backgroundColor:'#D9A441', borderRadius:4 },
+      { label:'Unhealthy days (11 yrs)', data:[37,6,11,2,15], backgroundColor:'#C1573A', borderRadius:4, yAxisID:'y1' }
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10 } } },
+    scales:{
+      x:{ grid:{ display:false } },
+      y:{ grid:{ color:gridColor }, title:{ display:true, text:'Avg AQI' } },
+      y1:{ position:'right', grid:{ display:false }, title:{ display:true, text:'Unhealthy days' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('boroughChart'), {
+  type:'bar',
+  data:{
+    labels:['Manhattan (4)','Brooklyn (3)','Bronx (3)','Queens (2)','Staten Isl. (2)'],
+    datasets:[{ label:'Avg AQI', data:[42,40,38,37,37], backgroundColor:'#D9A441', borderRadius:4 }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ display:false } },
+    scales:{ x:{ grid:{ display:false }, ticks:{ font:{ size:9.5 } } }, y:{ grid:{ color:gridColor } } }
+  }
+});
+
+new Chart(document.getElementById('hviChart'), {
+  type:'bar',
+  data:{
+    labels:['HVI 1\n(lowest)','HVI 2','HVI 3','HVI 4','HVI 5\n(highest)'],
+    datasets:[{ label:'Avg AQI', data:[34,38,41,39,38], backgroundColor:'#7A5C8C', borderRadius:4 }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ display:false } },
+    scales:{ x:{ grid:{ display:false } }, y:{ grid:{ color:gridColor } } }
+  }
+});
+</script>
+
+</body>
+</html>
