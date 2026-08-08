@@ -1,4 +1,5 @@
 # Hazy Margins: Air Quality &amp; Rising Heat in NYC
+By: Amaryllis Sun
 
 A SQL and Python-driven analysis of whether NYC's air quality and heat are actually getting worse. Here, eleven years of real federal and city data are used, not just assumptions.
 
