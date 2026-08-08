@@ -6,7 +6,7 @@ A SQL and Python-driven analysis of whether NYC's air quality and heat are actua
 
 ## The Mission of This Project
 
-My name is Amaryllis and I've lived in NYC my whole life. Recently, every summer seems to be hotter than the last. Weather reports seem to constantly spike up to 100 degrees and new wildfires arrive that bring smoke and other pollutants to the city, making the sky hazier and New Yorkers concerned. So, I wanted to look into this phenomenon and look beyond face-value, using actual data to prove my hypotheses. I built a PostgreSQL database from public EPA and NOAA data to both confirm and challenge my thoughts, and to compare NYC against four other major U.S. cities.
+My name is Amaryllis and I've lived in NYC my whole life. Recently, every summer seems to be hotter than the last. Weather reports seem to constantly record spikes up to 100 degrees, while nearby wildfires bring smoke and other pollutants to the city, making the sky hazier and New Yorkers concerned. So, I wanted to look into this phenomenon and think beyond face-value, using actual data to prove (or challenge) my hypotheses. I built a PostgreSQL database from public EPA and NOAA data to support my findings, and in turn, to compare NYC against four other major U.S. cities.
 
 ## Breaking Down This Repo
 
