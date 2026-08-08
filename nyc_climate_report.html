@@ -79,6 +79,11 @@
     color:var(--good); text-transform:uppercase; letter-spacing:0.12em;
     margin-bottom:1.2rem;
   }
+  .author {
+    font-family:'IBM Plex Mono', monospace; font-size:1rem;
+    color: white; text-transform:uppercase; letter-spacing:0.12em;
+    margin-bottom:1.2rem;
+  }
   .hero h1{ font-size:clamp(2.2rem, 5vw, 3.4rem); max-width:14ch; }
   .hero .thesis{
     font-size:1.15rem; color:var(--fog); max-width:56ch; margin-top:1.4rem;
@@ -154,7 +159,6 @@
 
 <nav>
   <div class="brand">Hazy Margins</div>
-  <a>By: Amaryllis Sun</a>
   <a href="#method">Method</a>
   <a href="#trend">Air Trend</a>
   <a href="#heat">Heat</a>
@@ -167,6 +171,7 @@
 
   <header class="hero">
     <div class="eyebrow">EPA + NOAA data from 2015-2025, one city at a time</div>
+    <div class="author">By: Amaryllis Sun</div>
     <h1>Is the air quality actually growing worse, or is it just our perception?</h1>
     <p class="thesis">
       My name is Amaryllis and I've lived in NYC my whole life. Recently, every summer seems to be hotter than the last. 
@@ -230,7 +235,7 @@
 
   <section id="trend">
     <div class="finding-tag">Finding 01</div>
-    <h2>Contrary to popular belief, NYC's air quality doesn't have trends, just spikes</h2>
+    <h2>NYC's air quality doesn't have an upward trend, just spikes</h2>
     <p>
       Averaged across Manhattan's EPA monitors, yearly AQI bounces between the high 30s and
       mid 40s with no apparent upward or downward line. The one year that stands out, 2023, wasn't
@@ -241,8 +246,8 @@
       <div class="caption">Average AQI &amp; PM2.5 by year, Manhattan monitors, 2015&ndash;2025</div>
     </div>
     <div class="callout">
-      2023 recorded 3 unhealthy-air days (AQI &gt; 100) — more than any other year in the dataset,
-      and the direct signature of the June 2023 wildfire smoke event. 2024 dropped straight back to zero, 
+      2023 recorded 3 unhealthy-air days (AQI &gt; 100), which is more than any other year in the dataset.
+      This is likely because of the June 2023 wildfire smoke event. 2024 dropped straight back to zero, 
       demonstrating the lack of a clear trend-line.
     </div>
   </section>
@@ -260,7 +265,7 @@
       <div class="chart-container"><canvas id="hotDaysChart"></canvas></div>
       <div class="caption">Days at 90°F+ per year, Central Park station, with linear trend (slope 0.5, R² 0.19)</div>
     </div>
-    <p>Furthermore, heat and air quality in NYC seem to be clearly correlated:</p>
+    <p>Similarly, heat and air quality in NYC seem to be clearly correlated:</p>
     <div class="chart-card">
       <div class="chart-container"><canvas id="tempBucketChart"></canvas></div>
       <div class="caption">Average AQI by daily max temperature, 2015&ndash;2025 (n = 3,397 station-days)</div>
@@ -289,8 +294,8 @@
         <tr><td>Phoenix</td><td class="num">40</td><td class="num">8.2</td><td class="num">15</td></tr>
       </tbody>
     </table>
-    <p class="muted">Note: Bug Fix Fun Fact! Initially, a city was considered to have a "bad day" if any single monitor spiked, which turned out to inflate 
-      the "bad day" count as cities with many monitors like LA and Phoenix were being repetitively counted. To fix this, I averaged one AQI value per city, per day. </p>
+    <p class="muted">Bug Fix Fun Fact: Initially, a city was considered to have a "bad day" if any single monitor spiked, which turned out to inflate 
+      the count as cities with many monitors, like LA and Phoenix, were being repetitively counted. To fix this, I averaged one AQI value per city, per day. </p>
   </section>
 
   <section id="boroughs">
@@ -331,7 +336,7 @@
       • Correlation between hot days and AQI doesn't separate heat itself from general summer trends, as
       ozone chemistry, wind patterns, and wildfire smoke all tend to occur in the same months.<br><br>
       • Five cities and eleven years is a real dataset, not a complete one. As such, it generalizes patterns instead of forming
-      nationally-specific conclusions.
+      nationally-applicable conclusions.
     </p>
   </section>
 
