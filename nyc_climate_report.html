@@ -165,38 +165,46 @@
 <div class="wrap">
 
   <header class="hero">
-    <div class="eyebrow">A decade of EPA + NOAA data, one city at a time</div>
-    <h1>Is the air actually getting worse, or just the summers?</h1>
+    <div class="eyebrow">EPA + NOAA data from 2015-2025, one city at a time</div>
+    <h1>Is the air quality in these cities actually growing worse, or is it our perception?</h1>
     <p class="thesis">
-      I live in Manhattan, and this past year the sky has felt different — hazier, hotter, longer.
-      So I built a database from eleven years of federal air-quality and weather records to find out
-      whether that feeling holds up, or whether memory is playing tricks. It's a bit of both.
+      My name is Amaryllis and I've lived in NYC my whole life. Recently, every summer seems to be hotter than the last. 
+      Weather reports seem to constantly record spikes up to 100 degrees, while nearby wildfires bring smoke and other pollutants to the city, making the sky hazier and New Yorkers concerned. 
+      So, I wanted to look into this phenomenon and think beyond face-value, using actual data to prove (or challenge) my hypotheses. 
+      I built a PostgreSQL database from public EPA and NOAA data to support my findings, and in turn, to compare NYC against four other major U.S. cities. 
+      Turns out, the answer is a bit of both.
     </p>
     <div class="hero-stat">
       <div class="stat-block">
         <div class="num">+0.5</div>
-        <div class="label">extra 90°F+ days per year in NYC, 2015&ndash;2025</div>
+        <div class="label">Extra 90°F+ days per year in NYC, 2015&ndash;2025</div>
       </div>
       <div class="stat-block">
         <div class="num">58<span style="font-size:1.2rem;color:var(--fog)"> vs 39</span></div>
-        <div class="label">average AQI on hot days vs. cooler days</div>
+        <div class="label">Average AQI on hot days vs. cooler days</div>
       </div>
       <div class="stat-block">
         <div class="num">5</div>
-        <div class="label">cities, 5 boroughs, 1 SQL database</div>
+        <div class="label">Cities, 5 boroughs, 1 SQL database</div>
       </div>
     </div>
   </header>
 
   <section id="method">
     <div class="finding-tag">Method</div>
-    <h2>What this actually is</h2>
+    <h2>Breaking Down the Database</h2>
     <p>
       A PostgreSQL database built from two federal sources — the EPA's Air Quality System API
       (daily PM2.5 and AQI, by monitoring station) and NOAA's Climate Data Online API (daily
-      temperature) — spanning 2015 through 2025 across five U.S. cities, plus a full five-borough
-      breakdown for New York City. A third dataset, NYC's Heat Vulnerability Index, adds a
-      socioeconomic layer by ZIP code.
+      temperature) — covering 2015 through 2025 across five U.S. cities, plus a full five-borough
+      breakdown for New York City. I wanted consistent data that was frequently updated so that my 
+      analysis of summers went further than just the ones I remembered in recent years, hence why a 
+      decade timeline was chosen. These two sources provided insight regarding pollutants that New Yorkers 
+      from all five boroughs might not necessarily know of, especially from just checking the weather app. 
+      Furthermore, a third dataset, NYC's Heat Vulnerability Index, adds a socioeconomic layer by ZIP code. 
+      We used the Census Bureau's geocoder to match each ZIP code to its corresponding station reading. 
+      This way, we can see if there exists a trend between vulnerable communities having worse air quality 
+      and higher temperatures.
     </p>
     <div class="grid-2">
       <div class="chart-card">
@@ -221,11 +229,11 @@
 
   <section id="trend">
     <div class="finding-tag">Finding 01</div>
-    <h2>NYC's air quality isn't trending anywhere — until it spikes</h2>
+    <h2>Contrary to popular belief, NYC's air quality doesn't have trends, just spikes</h2>
     <p>
       Averaged across Manhattan's EPA monitors, yearly AQI bounces between the high 30s and
-      mid 40s with no clean upward or downward line. The one year that stands out, 2023, wasn't
-      part of a trend at all — it was the Canadian wildfire smoke event.
+      mid 40s with no apparent upward or downward line. The one year that stands out, 2023, wasn't
+      part of a trend — it was the Canadian wildfire smoke that spread to the NYC area.
     </p>
     <div class="chart-card">
       <div class="chart-container"><canvas id="yearlyChart"></canvas></div>
@@ -233,24 +241,25 @@
     </div>
     <div class="callout">
       2023 recorded 3 unhealthy-air days (AQI &gt; 100) — more than any other year in the dataset,
-      and the direct signature of the June 2023 wildfire smoke event. 2024 dropped straight back to zero.
+      and the direct signature of the June 2023 wildfire smoke event. 2024 dropped straight back to zero, 
+      demonstrating the lack of a clear trend-line.
     </div>
   </section>
 
   <section id="heat">
     <div class="finding-tag">Finding 02</div>
-    <h2>Hot days are creeping up — slowly, and noisily</h2>
+    <h2>Hot days are slowly on the rise</h2>
     <p>
-      The number of 90°F+ days each year is trending upward: a linear fit puts it at roughly
+      The number of 90°F+ days each year is trending upward. A linear fit puts it at roughly
       <strong>+0.5 days per year</strong>. But the fit is loose — <span class="mono">R² = 0.19</span>,
-      meaning most of the year-to-year swing comes from ordinary weather variation, not a steady climb.
-      2020 had just one hot day; 2025 had fourteen.
+      meaning most of the year-to-year variation comes from ordinary weather changes, not a steady climb.
+      To copmare: 2020 had just one hot day while 2025 had fourteen.
     </p>
     <div class="chart-card">
       <div class="chart-container"><canvas id="hotDaysChart"></canvas></div>
       <div class="caption">Days at 90°F+ per year, Central Park station, with linear trend (slope 0.5, R² 0.19)</div>
     </div>
-    <p>And heat and air quality are, at least in NYC, clearly linked:</p>
+    <p>Furthermore, heat and air quality in NYC seem to be clearly correlated:</p>
     <div class="chart-card">
       <div class="chart-container"><canvas id="tempBucketChart"></canvas></div>
       <div class="caption">Average AQI by daily max temperature, 2015&ndash;2025 (n = 3,397 station-days)</div>
@@ -259,11 +268,11 @@
 
   <section id="cities">
     <div class="finding-tag">Finding 03</div>
-    <h2>NYC isn't the worst of the five — LA's problem is spikes, not baseline</h2>
+    <h2>NYC isn't the worst of the five cities, LA is.</h2>
     <p>
-      Houston edges out New York on average AQI, and Los Angeles isn't even the highest average —
-      but LA has more than double the unhealthy-air days of any other city. A moderate average can
-      hide a heavy tail of bad days.
+      Houston beats New York on average AQI, and Los Angeles doesn't even hold the highest average.
+      However, LA has more than double the unhealthy-air days of any other city. A decent average can
+      help to hide sequences of bad days.
     </p>
     <div class="chart-card">
       <div class="chart-container"><canvas id="cityChart"></canvas></div>
@@ -279,12 +288,13 @@
         <tr><td>Phoenix</td><td class="num">40</td><td class="num">8.2</td><td class="num">15</td></tr>
       </tbody>
     </table>
-    <p class="muted">Corrected after catching a bug: an earlier pass counted a city as having a "bad day" if any single monitor spiked, which inflated heavily-monitored cities like LA and Phoenix. Fixed by averaging to one AQI value per city per day first.</p>
+    <p class="muted">Note: Bug Fix Fun Fact! Initially, a city was considered to have a "bad day" if any single monitor spiked, which turned out to inflate 
+      the "bad day" count as cities with many monitors like LA and Phoenix were being repetitively counted. To fix this, I averaged one AQI value per city, per day. </p>
   </section>
 
   <section id="boroughs">
     <div class="finding-tag">Finding 04</div>
-    <h2>Manhattan runs a bit dirtier — heat vulnerability tells a different story</h2>
+    <h2>Manhattan's AQI seems to be the worst, but there isn't a clear relationship between heat vulnerability and AQI</h2>
     <div class="grid-2">
       <div class="chart-card">
         <div class="chart-container"><canvas id="boroughChart"></canvas></div>
@@ -296,37 +306,38 @@
       </div>
     </div>
     <p>
-      Manhattan's monitors average the highest AQI (42) and Staten Island/Queens the lowest (37) —
-      a real but modest gradient. What didn't hold up: a clean relationship between measured air
-      quality and NYC's own Heat Vulnerability Index. The most heat-vulnerable ZIP codes (HVI 5)
+      Manhattan's monitors average the highest AQI (42) while Staten Island/Queens hold the lowest (37),
+      a real but modest gradient. What wasn't clear, though, was an obvious relationship between measured air
+      quality and NYC's Heat Vulnerability Index. The most heat-vulnerable ZIP codes (HVI 5)
       show average air quality, not the worst.
     </p>
     <div class="callout good">
-      That's not a null result — it's a useful one. HVI is built from income, green space, and AC
-      access, not pollution readings. It measures who suffers most when heat arrives, not where the
-      air is dirtiest on paper. Exposure and capacity-to-cope are different axes of climate risk.
+      This is actually a useful result! HVI is determined by median income, green space, and AC
+      access within communities, not necessarily pollution readings. It measures who suffers most when a heat wave arrives 
+      (hence the vulnerability aspect of the name), not where the air is dirtiest on paper. Current exposure and ability to survive in case of 
+      future exposure are different components of climate risk.
     </div>
   </section>
 
   <section id="limits">
     <div class="finding-tag">Honest limitations</div>
-    <h2>What this data can't tell you</h2>
+    <h2>What This Data Doesn't Say</h2>
     <p>
-      • NYC's borough comparison rests on 14 EPA monitors total — 2 to 4 per borough — not a dense
-      enough grid to call any single ZIP code "worse," only to spot city-scale patterns.<br><br>
-      • Temperature for all five NYC boroughs comes from one station (Central Park). Air quality
-      is borough-specific; heat currently isn't.<br><br>
-      • Correlation between hot days and AQI doesn't separate heat itself from summer generally —
-      ozone chemistry, wind patterns, and wildfire smoke all cluster in the same months.<br><br>
-      • Five cities and eleven years is a real dataset, not a complete one — it supports a pattern,
-      not a national conclusion.
+      • NYC's borough comparison rests on 14 EPA monitors total (2 to 4 per borough), not a comprehensive
+      enough grid to call any single ZIP code "worse". It mainly works to spot city-scale patterns.<br><br>
+      • Temperature for all five NYC boroughs comes from one station (Central Park) due to its consistent and 
+      long-term data. Air quality is borough-specific while heat is currently limited.<br><br>
+      • Correlation between hot days and AQI doesn't separate heat itself from general summer trends, as
+      ozone chemistry, wind patterns, and wildfire smoke all tend to occur in the same months.<br><br>
+      • Five cities and eleven years is a real dataset, not a complete one. As such, it generalizes patterns instead of forming
+      nationally-specific conclusions.
     </p>
   </section>
 
   <section>
     <div class="finding-tag">The SQL, if you're curious</div>
-    <h2>The query behind the headline number</h2>
-    <p>Postgres's built-in regression functions did the trend-line math directly — no separate stats library needed:</p>
+    <h2>How the Linear Regression Was Calculated</h2>
+    <p>Postgres's built-in regression functions did the trend-line math directly, no third-party stats library import was needed:</p>
     <code class="block"><span class="kw">WITH</span> yearly_hot_days <span class="kw">AS</span> (
   <span class="kw">SELECT</span> <span class="fn">EXTRACT</span>(<span class="kw">YEAR</span> <span class="kw">FROM</span> d.reading_date) <span class="kw">AS</span> year,
          <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> d.reading_date) <span class="kw">AS</span> hot_days
